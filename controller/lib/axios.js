@@ -10,7 +10,7 @@ function getAxiosInstance(BASE_URL, headers = {}) {
       return axios({
         method: "post",
         baseURL: BASE_URL,
-        url: `/${method}`,
+        url: `${method}`,
         data,
         headers,
       });

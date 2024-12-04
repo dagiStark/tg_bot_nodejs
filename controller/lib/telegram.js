@@ -2,13 +2,13 @@ const { getAxiosInstance } = require("./axios");
 const { errorHandler } = require("./helper");
 
 const myToken = process.env.MY_TOKEN;
-const baseURL = process.env.BASE_URL;
+const baseURL = `https://api.telegram.org/bot${myToken}/`;
 const axiosInstance = getAxiosInstance(baseURL);
 
 async function sendMessage(chatId, messageTxt) {
   try {
     return await axiosInstance.get("sendMessage", {
-      chat_id: chatId || MY_GROUP_CHAT_ID,
+      chat_id: chatId || process.env.MY_GROUP_CHAT_ID,
       text: messageTxt,
     });
   } catch (er) {
