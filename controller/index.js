@@ -6,14 +6,23 @@ const {
   getAccessToken,
 } = require("./lib/googleAuth");
 const { getLimitedMedia } = require("./lib/googlePhotos");
+const { updateRefreshTokenInDb, getRefreshTokenFromDb } = require("./lib/dbHandler");
 
 const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 const accessToken = process.env.GOOGLE_ACCESS_TOKEN;
 
-
 async function handler(req, method) {
   try {
     if (method === "GET") {
+      if(req.url === "/pg-get-token") {
+        const refreshTokenFromDb = await getRefreshTokenFromDb();
+        return refreshTokenFromDb.rows[0].value;
+      }
+      if (req.url === "/pg-update") {
+        const tokenToUpdate = "SomeNewValue";
+        await updateRefreshTokenInDb(tokenToUpdate);
+        return "Success";
+      }
       if (req.url === "/test") {
         const data = await getNewLoginUrl();
         return data.config.url;
@@ -29,7 +38,7 @@ async function handler(req, method) {
         return result.data.access_token;
       }
 
-      if (req.url.indexOf("/gtoken") !== -1) { 
+      if (req.url.indexOf("/gtoken") !== -1) {
         const data = req.query.code;
         const result = await getRefreshToken(data);
         const refreshToken = result.data.refresh_token;
