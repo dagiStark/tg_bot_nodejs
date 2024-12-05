@@ -58,3 +58,28 @@ function getRefreshTokenFromDb() {
   });
 }
 
+function batchWriteItems(imageUrls) {
+  return new Promise((resolve, reject) => {
+    try {
+      const query = {
+        text: `INSERT INTO media_items (url) SELECT * FROM UNNEST ($1::text[])`,
+        values: [imageUrls],
+      };
+      pool.query(query, (err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+module.exports = {
+  updateRefreshTokenInDb,
+  getRefreshTokenFromDb,
+  batchWriteItems,
+};
