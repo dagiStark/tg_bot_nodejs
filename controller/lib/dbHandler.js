@@ -38,4 +38,23 @@ function updateRefreshTokenInDb(token) {
   });
 }
 
-module.exports = { updateRefreshTokenInDb };
+function getRefreshTokenFromDb() {
+  return new Promise((resolve, reject) => {
+    try {
+      const query = {
+        text: `SELECT value FROM key_value_pairs WHERE key = $1`,
+        values: ["tele_bot_google_refresh_token"],
+      };
+      pool.query(query, (err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
