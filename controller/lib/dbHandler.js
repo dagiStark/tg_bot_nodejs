@@ -18,3 +18,24 @@ pool.connect((err, client, release) => {
   release(); // Release the client back to the pool
 });
 
+function updateRefreshTokenInDb(token) {
+  return new Promise((resolve, reject) => {
+    try {
+      const query = {
+        text: `UPDATE key_value_pairs SET value = $1, created_on = $2 WHERE key = $3`,
+        values: [token, new Date(), "tele_bot_google_refresh_token"],
+      };
+      pool.query(query, (err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+module.exports = { updateRefreshTokenInDb };
