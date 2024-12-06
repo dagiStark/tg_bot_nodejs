@@ -1,4 +1,11 @@
 const { getAxiosInstance } = require("./axios");
+const {
+  getRefreshTokenFromDb,
+  batchWriteItems,
+  getRandomPhoto,
+} = require("./dbHandler");
+const { getNewLoginUrl, getAccessToken } = require("./googleAuth");
+const { getLimitedMedia } = require("./googlePhotos");
 const { errorHandler } = require("./helper");
 
 const myToken = process.env.MY_TOKEN;
@@ -14,6 +21,14 @@ async function sendMessage(chatId, messageTxt) {
   } catch (er) {
     errorHandler(er, "sendMessage", "axios");
   }
+}
+
+function sendPhoto(messageObj, photoUrl, caption = "") {
+  return axiosInstance.post("sendPhoto", {
+    chat_id: messageObj.chat.id,
+    photo: photoUrl,
+    caption,
+  });
 }
 
 async function handleMessage(messageObj) {
@@ -36,6 +51,25 @@ async function handleMessage(messageObj) {
             "Hi!, I'm a bot. I can help you sort out your bills"
           );
 
+        case "getLogin":
+          const data = await getNewLoginUrl();
+          const parsedUrl = data.config.url.replace(/\s/g, "");
+          await sendMessage(chatId, parsedUrl);
+          return;
+
+        case "updateMedia":
+          const refreshToken = await getRefreshTokenFromDb();
+          const accessTokenData = await getAccessToken(refreshToken.value);
+          const allMediaItems = await getLimitedMedia(
+            accessTokenData.data.access_token
+          );
+          await batchWriteItems(allMediaItems);
+          return sendMessage(chatId, "All media updated successfully!");
+
+        case "surprise":
+          const randomPhoto = await getRandomPhoto();
+          await sendPhoto(messageObj, randomPhoto);
+          return
         default:
           return sendMessage(chatId, "Unsupported Command!");
       }
