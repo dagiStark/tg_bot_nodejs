@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const { errorHandler } = require("./helper");
 
 const pool = new Pool({
   user: process.env.PG_USER,
@@ -27,6 +28,7 @@ function updateRefreshTokenInDb(token) {
       };
       pool.query(query, (err, res) => {
         if (err) {
+          errorHandler(err, "updateRefreshTokenInDb", "pg");
           reject(err);
         } else {
           resolve(res);
@@ -47,6 +49,7 @@ function getRefreshTokenFromDb() {
       };
       pool.query(query, (err, res) => {
         if (err) {
+          errorHandler(err, "getRefreshTokenFromDb", "pg");
           reject(err);
         } else {
           resolve(res);
@@ -73,6 +76,7 @@ function batchWriteItems(imageUrls) {
       };
       pool.query(query, (err, res) => {
         if (err) {
+          errorHandler(err, "batchWriteItems", "pg");
           reject(err);
         } else {
           resolve(res);
@@ -92,6 +96,7 @@ function getRandomPhoto() {
       };
       pool.query(query, (err, res) => {
         if (err) {
+          errorHandler(err, "getRandomPhoto", "pg");
           reject(err);
         } else {
           resolve(res.rows[0].url);
@@ -111,6 +116,7 @@ function clearMediaItems() {
       };
       pool.query(query, (err, res) => {
         if (err) {
+          errorHandler(err, "clearMediaItems", "pg");
           reject(err);
         } else {
           resolve(res);

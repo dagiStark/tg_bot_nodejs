@@ -16,8 +16,12 @@ function errorHandler(error, name, from) {
     }
 
     loggerFunction(error.toJSON());
-  } else {
-    loggerFunction(error);
+  } else if (from === "pg") {
+    if (error.stack) {
+      loggerFunction(error.stack);
+    } else {
+      loggerFunction(error);
+    }
   }
 
   loggerFunction("-----------END-----------");
