@@ -60,6 +60,12 @@ function getRefreshTokenFromDb() {
 
 function batchWriteItems(imageUrls) {
   return new Promise((resolve, reject) => {
+    if (
+      !Array.isArray(imageUrls) ||
+      imageUrls.some((url) => typeof url !== "string")
+    ) {
+      throw new Error("imageUrls must be an array of strings");
+    }
     try {
       const query = {
         text: `INSERT INTO media_items (url) SELECT * FROM UNNEST ($1::text[])`,
@@ -84,7 +90,7 @@ function getRandomPhoto() {
       const query = {
         text: `SELECT url FROM media_items ORDER BY random() LIMIT 1`,
       };
-      Pool.query(query, (err, res) => {
+      pool.query(query, (err, res) => {
         if (err) {
           reject(err);
         } else {
@@ -97,9 +103,29 @@ function getRandomPhoto() {
   });
 }
 
+function clearMediaItems() {
+  return new Promise((resolve, reject) => {
+    try {
+      const query = {
+        text: `DELETE FROM media_items`,
+      };
+      pool.query(query, (err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 module.exports = {
   updateRefreshTokenInDb,
   getRefreshTokenFromDb,
   batchWriteItems,
-  getRandomPhoto
+  getRandomPhoto,
+  clearMediaItems,
 };
