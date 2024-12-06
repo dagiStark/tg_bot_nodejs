@@ -3,6 +3,7 @@ const {
   getRefreshTokenFromDb,
   batchWriteItems,
   getRandomPhoto,
+  clearMediaItems,
 } = require("./dbHandler");
 const { getNewLoginUrl, getAccessToken } = require("./googleAuth");
 const { getLimitedMedia } = require("./googlePhotos");
@@ -51,15 +52,18 @@ async function handleMessage(messageObj) {
             "Hi!, I'm a bot. I can help you sort out your bills"
           );
 
-        case "getLogin":
+        case "getlogin":
           const data = await getNewLoginUrl();
           const parsedUrl = data.config.url.replace(/\s/g, "");
           await sendMessage(chatId, parsedUrl);
           return;
 
-        case "updateMedia":
+        case "updatemedia":
+          await clearMediaItems();
           const refreshToken = await getRefreshTokenFromDb();
-          const accessTokenData = await getAccessToken(refreshToken.value);
+          const accessTokenData = await getAccessToken(
+            refreshToken.rows[0].value
+          );
           const allMediaItems = await getLimitedMedia(
             accessTokenData.data.access_token
           );
@@ -69,7 +73,7 @@ async function handleMessage(messageObj) {
         case "surprise":
           const randomPhoto = await getRandomPhoto();
           await sendPhoto(messageObj, randomPhoto);
-          return
+          return;
         default:
           return sendMessage(chatId, "Unsupported Command!");
       }
