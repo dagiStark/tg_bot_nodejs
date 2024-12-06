@@ -27,7 +27,7 @@ async function handler(req, method) {
 
       // TO TEST
       if (req.url === "/batch") {
-        const testingData = ["url1, url2, url3"];
+        const testingData = ["url1", "url2", "url3"];
         await batchWriteItems(testingData);
         return "Success";
       }
@@ -50,6 +50,7 @@ async function handler(req, method) {
 
       if (req.url === "/test-2") {
         const result = await getLimitedMedia(accessToken);
+        await batchWriteItems(result);
         return JSON.stringify(result);
       }
 
