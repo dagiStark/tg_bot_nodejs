@@ -78,8 +78,28 @@ function batchWriteItems(imageUrls) {
   });
 }
 
+function getRandomPhoto() {
+  return new Promise((resolve, reject) => {
+    try {
+      const query = {
+        text: `SELECT url FROM media_items ORDER BY random() LIMIT 1`,
+      };
+      Pool.query(query, (err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res.rows[0].url);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 module.exports = {
   updateRefreshTokenInDb,
   getRefreshTokenFromDb,
   batchWriteItems,
+  getRandomPhoto
 };
