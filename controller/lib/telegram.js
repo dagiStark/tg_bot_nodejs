@@ -2,14 +2,16 @@ const { getAxiosInstance } = require("./axios");
 const {
   getRefreshTokenFromDb,
   batchWriteItems,
-  getRandomPhoto,
+  getRandomPhotoId,
   clearMediaItems,
 } = require("./dbHandler");
 const { getNewLoginUrl, getAccessToken } = require("./googleAuth");
-const { getLimitedMedia } = require("./googlePhotos");
+const { getLimitedMedia, getMediaItem } = require("./googlePhotos");
 const { errorHandler } = require("./helper");
 
 const myToken = process.env.MY_TOKEN;
+const myChatId = process.env.MY_CHAT_ID;
+
 const baseURL = `https://api.telegram.org/bot${myToken}/`;
 const axiosInstance = getAxiosInstance(baseURL);
 
@@ -32,7 +34,15 @@ function sendPhoto(messageObj, photoUrl, caption = "") {
   });
 }
 
-async function handleMessage(messageObj) {
+async function handleMessage(messageObj) {  
+  
+  if (messageObj.chat.id && messageObj.chat.id !== Number(myChatId)) {
+    return sendMessage(
+      messageObj.chat.id,
+      "This bot is not available to this chat!"
+    );
+  }
+
   const messageTxt = messageObj.text || "";
 
   if (!messageTxt) {
@@ -71,8 +81,16 @@ async function handleMessage(messageObj) {
           return sendMessage(chatId, "All media updated successfully!");
 
         case "surprise":
-          const randomPhoto = await getRandomPhoto();
-          await sendPhoto(messageObj, randomPhoto);
+          const refreshTokenValue = await getRefreshTokenFromDb();
+          const accessTokenDataValue = await getAccessToken(
+            refreshTokenValue.rows[0].value
+          );
+          const randomPhotoId = await getRandomPhotoId();
+          const randomPhoto = await getMediaItem(
+            randomPhotoId,
+            accessTokenDataValue.data.access_token
+          );
+          await sendPhoto(messageObj, randomPhoto.baseUrl);
           return;
         default:
           return sendMessage(chatId, "Unsupported Command!");
@@ -81,6 +99,8 @@ async function handleMessage(messageObj) {
       return sendMessage(chatId, messageTxt);
     }
   } catch (error) {
+    console.log(error);
+
     errorHandler(error, "handleMessage");
   }
 }
