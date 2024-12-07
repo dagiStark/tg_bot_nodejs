@@ -61,48 +61,48 @@ function getRefreshTokenFromDb() {
   });
 }
 
-function batchWriteItems(imageUrls) {
+function batchWriteItems(imageIds) {
   return new Promise((resolve, reject) => {
-    if (
-      !Array.isArray(imageUrls) ||
-      imageUrls.some((url) => typeof url !== "string")
-    ) {
-      throw new Error("imageUrls must be an array of strings");
-    }
     try {
+      if (
+        !Array.isArray(imageIds) ||
+        imageIds.some((ids) => typeof ids !== "string")
+      ) {
+        throw new Error("imageUrls must be an array of strings");
+      }
       const query = {
-        text: `INSERT INTO media_items (url) SELECT * FROM UNNEST ($1::text[])`,
-        values: [imageUrls],
+        text: `INSERT INTO media_items (media_id) SELECT * FROM UNNEST ($1::text[])`,
+        values: [imageIds],
       };
       pool.query(query, (err, res) => {
         if (err) {
-          errorHandler(err, "batchWriteItems", "pg");
-          reject(err);
+          throw new Error(err);
         } else {
           resolve(res);
         }
       });
     } catch (error) {
+      errorHandler(error, "batchWriteItems", "pg");
       reject(error);
     }
   });
 }
 
-function getRandomPhoto() {
+function getRandomPhotoId() {
   return new Promise((resolve, reject) => {
     try {
       const query = {
-        text: `SELECT url FROM media_items ORDER BY random() LIMIT 1`,
+        text: `SELECT media_id FROM media_items ORDER BY random() LIMIT 1`,
       };
       pool.query(query, (err, res) => {
         if (err) {
-          errorHandler(err, "getRandomPhoto", "pg");
-          reject(err);
+          throw new Error(err);
         } else {
-          resolve(res.rows[0].url);
+          resolve(res.rows[0].media_id);
         }
       });
     } catch (error) {
+      errorHandler(error, "getRandomPhoto", "pg");
       reject(error);
     }
   });
@@ -132,6 +132,6 @@ module.exports = {
   updateRefreshTokenInDb,
   getRefreshTokenFromDb,
   batchWriteItems,
-  getRandomPhoto,
+  getRandomPhotoId,
   clearMediaItems,
 };

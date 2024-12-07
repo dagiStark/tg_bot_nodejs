@@ -1,5 +1,5 @@
 const axios = require("axios");
-const errorHandler = require("./errorHandler");
+const errorHandler = require("./helper");
 
 function getNewLoginUrl() {
   const url = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URI}&scope=${process.env.GOOGLE_SCOPE}&response_type=code&access_type=offline`;

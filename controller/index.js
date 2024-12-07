@@ -10,7 +10,7 @@ const {
   updateRefreshTokenInDb,
   getRefreshTokenFromDb,
   batchWriteItems,
-  getRandomPhoto,
+  getRandomPhotoId,
 } = require("./lib/dbHandler");
 
 const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
@@ -21,7 +21,7 @@ async function handler(req, method) {
     if (method === "GET") {
       // TO TEST
       if (req.url === "/get-random") {
-        const url = await getRandomPhoto();
+        const url = await getRandomPhotoId();
         return url;
       }
 
