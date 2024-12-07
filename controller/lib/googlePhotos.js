@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { errorHandler } = require("./helper");
 
 function getLimitedMedia(accessToken) {
   return new Promise((resolve, reject) => {
@@ -20,14 +21,36 @@ function getLimitedMedia(accessToken) {
       .then((response) => {
         const mediaItems = response.data.mediaItems || [];
         // Extract only the base URLs of the media items
-        const mediaUrls = mediaItems.map((mediaItem) => mediaItem.baseUrl);
-        resolve(mediaUrls);
+        const mediaIds = mediaItems.map((mediaItem) => mediaItem.id);
+        resolve(mediaIds);
       })
       .catch((error) => {
-        console.error("Error fetching media items:", error);
+        errorHandler(error, "getLimitedMedia", "axios");
         reject(error);
       });
   });
 }
 
-module.exports = { getLimitedMedia };
+function getMediaItem(itemId, accessToken) {
+  return new Promise((resolve, reject) => {
+    const axiosConfig = {
+      method: "get",
+      url: `https://photoslibrary.googleapis.com/v1/mediaItems/${itemId}`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    axios(axiosConfig)
+      .then((response) => {
+        resolve(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error, "getMediaItem", "axios");
+        reject(error);
+      });
+  });
+}
+
+module.exports = { getLimitedMedia, getMediaItem };
